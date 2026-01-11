@@ -1,0 +1,649 @@
+{
+	"info": {
+		"_postman_id": "microdocuments-api-collection",
+		"name": "MicroDocuments API",
+		"description": "Colección completa de endpoints para MicroDocuments - Sistema de Gestión de Documentos de Banco BHD",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "microdocuments"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Verifica el estado de salud de la aplicación"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de monitoreo y salud de la aplicación"
+		},
+		{
+			"name": "Documents",
+			"item": [
+				{
+					"name": "Upload Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 202\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response has id\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "File",
+									"type": "file",
+									"src": [],
+									"description": "Archivo a subir (requerido)"
+								},
+								{
+									"key": "Filename",
+									"value": "test-document.pdf",
+									"type": "text",
+									"description": "Nombre del archivo (opcional, se usa el del archivo si no se proporciona)"
+								},
+								{
+									"key": "ContentType",
+									"value": "application/pdf",
+									"type": "text",
+									"description": "Tipo MIME (opcional, se detecta del archivo si no se proporciona)"
+								},
+								{
+									"key": "DocumentType",
+									"value": "CONTRACT",
+									"type": "text",
+									"description": "Tipo de documento: KYC, CONTRACT, FORM, SUPPORTING_DOCUMENT, OTHER (requerido)"
+								},
+								{
+									"key": "Channel",
+									"value": "DIGITAL",
+									"type": "text",
+									"description": "Canal: BRANCH, DIGITAL, BACKOFFICE, OTHER (requerido)"
+								},
+								{
+									"key": "CustomerId",
+									"value": "customer-123",
+									"type": "text",
+									"description": "ID del cliente (opcional)"
+								},
+								{
+									"key": "CorrelationId",
+									"value": "correlation-123",
+									"type": "text",
+									"description": "ID de correlación para trazabilidad (opcional)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/actions/upload",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"documents",
+								"actions",
+								"upload"
+							]
+						},
+						"description": "Sube un documento. El proceso es asíncrono, retorna 202 Accepted con el ID del documento."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Documents",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents?sortBy=uploadDate&sortDirection=ASC&filename=test&documentType=CONTRACT&status=RECEIVED",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"documents"
+							],
+							"query": [
+								{
+									"key": "sortBy",
+									"value": "uploadDate",
+									"description": "Campo para ordenar (requerido): uploadDate, filename, documentType, status"
+								},
+								{
+									"key": "sortDirection",
+									"value": "ASC",
+									"description": "Dirección de ordenamiento: ASC o DESC (default: ASC)"
+								},
+								{
+									"key": "uploadDateStart",
+									"value": "2024-01-01T00:00:00Z",
+									"description": "Fecha de inicio para filtrar por fecha de carga (ISO 8601)"
+								},
+								{
+									"key": "uploadDateEnd",
+									"value": "2024-12-31T23:59:59Z",
+									"description": "Fecha de fin para filtrar por fecha de carga (ISO 8601)"
+								},
+								{
+									"key": "filename",
+									"value": "test",
+									"description": "Filtrar por nombre de archivo (coincidencia parcial)"
+								},
+								{
+									"key": "contentType",
+									"value": "application/pdf",
+									"description": "Filtrar por tipo MIME"
+								},
+								{
+									"key": "documentType",
+									"value": "CONTRACT",
+									"description": "Filtrar por tipo de documento: KYC, CONTRACT, FORM, SUPPORTING_DOCUMENT, OTHER"
+								},
+								{
+									"key": "status",
+									"value": "RECEIVED",
+									"description": "Filtrar por estado: RECEIVED, SENT, FAILED"
+								},
+								{
+									"key": "customerId",
+									"value": "customer-123",
+									"description": "Filtrar por ID de cliente"
+								},
+								{
+									"key": "channel",
+									"value": "DIGITAL",
+									"description": "Filtrar por canal: BRANCH, DIGITAL, BACKOFFICE, OTHER"
+								}
+							]
+						},
+						"description": "Busca documentos sin paginación. El parámetro sortBy es obligatorio."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Documents (Minimal)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents?sortBy=uploadDate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"documents"
+							],
+							"query": [
+								{
+									"key": "sortBy",
+									"value": "uploadDate",
+									"description": "Campo para ordenar (requerido)"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC",
+									"description": "Dirección de ordenamiento"
+								}
+							]
+						},
+						"description": "Búsqueda mínima con solo el parámetro obligatorio sortBy"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Documents Paged",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pagination structure\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('content');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('nextPage');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/search?page=1&pageSize=10&sortBy=uploadDate&sortDirection=DESC&filter=filename contains 'test' AND status eq 'RECEIVED'",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"documents",
+								"search"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Número de página (default: 1)"
+								},
+								{
+									"key": "pageSize",
+									"value": "10",
+									"description": "Tamaño de página (default: 10)"
+								},
+								{
+									"key": "sortBy",
+									"value": "uploadDate",
+									"description": "Campo para ordenar (requerido): uploadDate, filename, documentType, status"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC",
+									"description": "Dirección de ordenamiento: ASC o DESC (default: ASC)"
+								},
+								{
+									"key": "filter",
+									"value": "filename contains 'test' AND status eq 'RECEIVED'",
+									"description": "Filtro genérico usando sintaxis: property operator value [AND|OR property operator value].\nOperadores: eq, ne, gt, ge, lt, le, contains, startswith, endswith, in, isnull, isnotnull"
+								}
+							]
+						},
+						"description": "Busca documentos con paginación y filtros genéricos avanzados. El parámetro sortBy es obligatorio."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Documents Paged (Page 2)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/search?page=2&pageSize=10&sortBy=uploadDate&sortDirection=DESC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"documents",
+								"search"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "uploadDate"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC"
+								}
+							]
+						},
+						"description": "Ejemplo de segunda página de resultados"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Documents Paged (Advanced Filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/search?page=1&pageSize=20&sortBy=uploadDate&sortDirection=DESC&filter=size gt 1000 AND uploadDate gt '2024-01-01' OR status eq 'SENT'",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"documents",
+								"search"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								},
+								{
+									"key": "sortBy",
+									"value": "uploadDate"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC"
+								},
+								{
+									"key": "filter",
+									"value": "size gt 1000 AND uploadDate gt '2024-01-01' OR status eq 'SENT'",
+									"description": "Ejemplo de filtros complejos con operadores lógicos AND/OR"
+								}
+							]
+						},
+						"description": "Ejemplo de búsqueda con filtros avanzados usando el sistema de filtros genérico"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de documentos: carga, búsqueda y búsqueda paginada"
+		},
+		{
+			"name": "API Keys",
+			"item": [
+				{
+					"name": "Create API Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has apiKey\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('apiKey');",
+									"    pm.environment.set('api_key', jsonData.apiKey);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test API Key\",\n    \"rateLimitPerMinute\": 100,\n    \"expiresAt\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/apikeys",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"apikeys"
+							]
+						},
+						"description": "Crea una nueva API key. El valor de la API key solo se muestra una vez en la respuesta."
+					},
+					"response": []
+				},
+				{
+					"name": "List API Keys",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/apikeys",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"apikeys"
+							]
+						},
+						"description": "Lista todas las API keys activas. Los valores de las API keys no se muestran por seguridad."
+					},
+					"response": []
+				},
+				{
+					"name": "Get API Key by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/apikeys/{apiKeyId}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"apikeys",
+								"{apiKeyId}"
+							],
+							"variable": [
+								{
+									"key": "apiKeyId",
+									"value": "",
+									"description": "ID de la API key (GUID)"
+								}
+							]
+						},
+						"description": "Obtiene los detalles de una API key específica por su ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete API Key",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bhd/mgmt/1/apikeys/{apiKeyId}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bhd",
+								"mgmt",
+								"1",
+								"apikeys",
+								"{apiKeyId}"
+							],
+							"variable": [
+								{
+									"key": "apiKeyId",
+									"value": "",
+									"description": "ID de la API key a eliminar (GUID)"
+								}
+							]
+						},
+						"description": "Elimina (soft delete) una API key por su ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de API keys: crear, listar, obtener y eliminar"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "bhd-1234567890-1234567890",
+			"type": "string"
+		}
+	]
+}
+
