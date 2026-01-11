@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  microdocuments-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: microdocuments-api
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Data Source=/app/db/documents.db
+      - DocumentPublisher__UseMock=true
+      - DocumentPublisher__Url=https://internal-document-storage.bhd.com.do/api/documents
+    volumes:
+      # Persist database across container restarts
+      - ./data/db:/app/db
+      # Persist temp uploads (optional, for debugging)
+      - ./data/temp_uploads:/app/temp_uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
