@@ -13,7 +13,7 @@ public class DocumentUploadBackgroundService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DocumentUploadBackgroundService> _logger;
     private int _cleanupCycleCounter = 0;
-    private const int CLEANUP_INTERVAL_CYCLES = 60; // Cleanup every 5 minutes (60 * 5 seconds)
+    private const int CLEANUP_INTERVAL_CYCLES = 60;
 
     public DocumentUploadBackgroundService(
         IServiceProvider serviceProvider,
@@ -31,7 +31,6 @@ public class DocumentUploadBackgroundService : BackgroundService
             {
                 await ProcessPendingUploads(stoppingToken);
 
-                // Periodic cleanup of orphaned temp files
                 _cleanupCycleCounter++;
                 if (_cleanupCycleCounter >= CLEANUP_INTERVAL_CYCLES)
                 {
@@ -73,7 +72,6 @@ public class DocumentUploadBackgroundService : BackgroundService
                     "DocumentUploadBackgroundService.ProcessPendingUploads - Error processing document {DocumentId}",
                     document.Id);
 
-                // Clean up temporary file if processing fails
                 try
                 {
                     await fileStorage.DeleteAsync(document.Id, cancellationToken);
@@ -106,10 +104,12 @@ public class DocumentUploadBackgroundService : BackgroundService
             "DocumentUploadBackgroundService.ProcessDocumentAsync - Processing document {DocumentId}, Filename: {Filename}",
             document.Id, document.Filename);
 
-        // Use streaming to read and send
-        await using var fileStream = await fileStorage.GetStreamAsync(document.Id, cancellationToken);
+        string url;
         
-        var url = await publisher.PublishStreamAsync(document, fileStream, cancellationToken);
+        await using (var fileStream = await fileStorage.GetStreamAsync(document.Id, cancellationToken))
+        {
+            url = await publisher.PublishStreamAsync(document, fileStream, cancellationToken);
+        }
 
         document.Status = DocumentStatus.SENT;
         document.Url = url;
@@ -120,7 +120,20 @@ public class DocumentUploadBackgroundService : BackgroundService
         _logger.LogInformation(
             "DocumentUploadBackgroundService.ProcessDocumentAsync - Document status updated, DocumentId: {DocumentId}, UpdatedBy: {UpdatedBy}",
             document.Id, document.UpdatedBy);
-        await fileStorage.DeleteAsync(document.Id, cancellationToken);
+        
+        try
+        {
+            await fileStorage.DeleteAsync(document.Id, cancellationToken);
+            _logger.LogInformation(
+                "DocumentUploadBackgroundService.ProcessDocumentAsync - Temporary file deleted, DocumentId: {DocumentId}",
+                document.Id);
+        }
+        catch (Exception deleteEx)
+        {
+            _logger.LogWarning(deleteEx,
+                "DocumentUploadBackgroundService.ProcessDocumentAsync - Failed to delete temporary file (document already sent), DocumentId: {DocumentId}",
+                document.Id);
+        }
 
         _logger.LogInformation(
             "DocumentUploadBackgroundService.ProcessDocumentAsync - Document processed successfully {DocumentId}, Url: {Url}",

@@ -35,6 +35,9 @@ public static class ServiceCollectionExtensions
         services.Configure<ApiKeySettings>(
             configuration.GetSection(ApiKeySettings.SectionName));
 
+        services.Configure<FileUploadSettings>(
+            configuration.GetSection(FileUploadSettings.SectionName));
+
         return services;
     }
 

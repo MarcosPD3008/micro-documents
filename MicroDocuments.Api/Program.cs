@@ -1,8 +1,11 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
 using MicroDocuments.Application.Extensions;
+using MicroDocuments.Infrastructure.Configuration;
 using MicroDocuments.Infrastructure.Extensions;
-using MicroDocuments.Infrastructure.Middleware;
 using Serilog;
+using MicroDocuments.Infrastructure.Middleware;
 
 try
 {
@@ -77,6 +80,31 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddHealthChecks();
 builder.Services.AddMemoryCache();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+var fileUploadSettings = builder.Configuration.GetSection(FileUploadSettings.SectionName).Get<FileUploadSettings>() 
+    ?? new FileUploadSettings { MaxFileSizeMB = 100 };
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = fileUploadSettings.MaxFileSizeBytes;
+    options.ValueLengthLimit = (int)fileUploadSettings.MaxFileSizeBytes;
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = fileUploadSettings.MaxFileSizeBytes;
+});
+
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddRepositories();
 builder.Services.AddExternalServices(builder.Configuration);
@@ -88,6 +116,8 @@ var app = builder.Build();
 
 await app.Services.EnsureDatabaseCreatedAsync(builder.Configuration);
 await app.Services.InitializeApiKeyCacheAsync();
+
+app.UseCors();
 
 app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
 app.UseMiddleware<RateLimitingMiddleware>();

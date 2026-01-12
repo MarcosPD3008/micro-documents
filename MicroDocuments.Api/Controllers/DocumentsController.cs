@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MicroDocuments.Api.DTOs;
 using MicroDocuments.Application.DTOs;
 using MicroDocuments.Application.Pagination;
 using MicroDocuments.Application.UseCases;
 using MicroDocuments.Domain.Enums;
+using MicroDocuments.Infrastructure.Configuration;
 
 namespace MicroDocuments.Api.Controllers;
 
@@ -15,17 +18,23 @@ public class DocumentsController : ControllerBase
     private readonly SearchDocumentsUseCase _searchUseCase;
     private readonly SearchDocumentsPagedUseCase _searchPagedUseCase;
     private readonly ILogger<DocumentsController> _logger;
+    private readonly FileUploadSettings _fileUploadSettings;
+    private readonly IWebHostEnvironment _environment;
 
     public DocumentsController(
         UploadDocumentUseCase uploadUseCase,
         SearchDocumentsUseCase searchUseCase,
         SearchDocumentsPagedUseCase searchPagedUseCase,
-        ILogger<DocumentsController> logger)
+        ILogger<DocumentsController> logger,
+        IOptions<FileUploadSettings> fileUploadSettings,
+        IWebHostEnvironment environment)
     {
         _uploadUseCase = uploadUseCase;
         _searchUseCase = searchUseCase;
         _searchPagedUseCase = searchPagedUseCase;
         _logger = logger;
+        _fileUploadSettings = fileUploadSettings.Value;
+        _environment = environment;
     }
 
     [HttpPost("actions/upload")]
@@ -47,6 +56,12 @@ public class DocumentsController : ControllerBase
             return BadRequest("File is required");
         }
 
+        // Validate file size
+        if (formDto.File.Length > _fileUploadSettings.MaxFileSizeBytes)
+        {
+            return BadRequest($"File size exceeds maximum allowed size of {_fileUploadSettings.MaxFileSizeMB} MB");
+        }
+
         var filename = string.IsNullOrWhiteSpace(formDto.Filename)
             ? formDto.File.FileName
             : formDto.Filename;
@@ -58,7 +73,7 @@ public class DocumentsController : ControllerBase
         try
         {
             // Use streaming directly from IFormFile
-            var fileStream = formDto.File.OpenReadStream();
+            await using var fileStream = formDto.File.OpenReadStream();
             var fileSize = formDto.File.Length;
 
             var request = new DocumentUploadRequestDto
@@ -79,7 +94,10 @@ public class DocumentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "DocumentsController.UploadDocument - Error uploading document");
-            return StatusCode(500, ex.Message);
+            var errorMessage = _environment.IsDevelopment() 
+                ? ex.Message 
+                : "An unexpected error occurred. Please try again later.";
+            return StatusCode(500, errorMessage);
         }
     }
 
@@ -104,7 +122,10 @@ public class DocumentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "DocumentsController.SearchDocuments - Error searching documents");
-            return StatusCode(500, "An unexpected error occurred");
+            var errorMessage = _environment.IsDevelopment() 
+                ? ex.Message 
+                : "An unexpected error occurred. Please try again later.";
+            return StatusCode(500, errorMessage);
         }
     }
 
@@ -129,7 +150,10 @@ public class DocumentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "DocumentsController.SearchDocumentsPaged - Error searching documents");
-            return StatusCode(500, "An unexpected error occurred");
+            var errorMessage = _environment.IsDevelopment() 
+                ? ex.Message 
+                : "An unexpected error occurred. Please try again later.";
+            return StatusCode(500, errorMessage);
         }
     }
 }
