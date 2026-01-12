@@ -159,7 +159,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/bhd/mgmt/1/documents?sortBy=uploadDate&sortDirection=ASC&filename=test&documentType=CONTRACT&status=RECEIVED",
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents?sortBy=Created&sortDirection=DESC&filename=test&documentType=CONTRACT&status=RECEIVED",
 							"host": [
 								"{{base_url}}"
 							],
@@ -173,13 +173,13 @@
 							"query": [
 								{
 									"key": "sortBy",
-									"value": "uploadDate",
-									"description": "Campo para ordenar (requerido): uploadDate, filename, documentType, status"
+									"value": "Created",
+									"description": "Campo para ordenar (opcional, default: Created): Created, uploadDate, filename, documentType, status"
 								},
 								{
 									"key": "sortDirection",
-									"value": "ASC",
-									"description": "Dirección de ordenamiento: ASC o DESC (default: ASC)"
+									"value": "DESC",
+									"description": "Dirección de ordenamiento: ASC o DESC (default: DESC)"
 								},
 								{
 									"key": "uploadDateStart",
@@ -223,7 +223,7 @@
 								}
 							]
 						},
-						"description": "Busca documentos sin paginación. El parámetro sortBy es obligatorio."
+						"description": "Busca documentos sin paginación. Los parámetros sortBy y sortDirection son opcionales (default: sortBy=Created, sortDirection=DESC)."
 					},
 					"response": []
 				},
@@ -239,7 +239,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/bhd/mgmt/1/documents?sortBy=uploadDate",
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents",
 							"host": [
 								"{{base_url}}"
 							],
@@ -250,20 +250,9 @@
 								"1",
 								"documents"
 							],
-							"query": [
-								{
-									"key": "sortBy",
-									"value": "uploadDate",
-									"description": "Campo para ordenar (requerido)"
-								},
-								{
-									"key": "sortDirection",
-									"value": "DESC",
-									"description": "Dirección de ordenamiento"
-								}
-							]
+							"query": []
 						},
-						"description": "Búsqueda mínima con solo el parámetro obligatorio sortBy"
+						"description": "Búsqueda mínima sin parámetros. Usa valores por defecto: sortBy=Created, sortDirection=DESC"
 					},
 					"response": []
 				},
@@ -299,7 +288,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/search?page=1&pageSize=10&sortBy=uploadDate&sortDirection=DESC&filter=filename contains 'test' AND status eq 'RECEIVED'",
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/search?page=1&pageSize=10&sortBy=Created&sortDirection=DESC&filter=filename contains 'test' AND status eq 'RECEIVED'",
 							"host": [
 								"{{base_url}}"
 							],
@@ -324,13 +313,13 @@
 								},
 								{
 									"key": "sortBy",
-									"value": "uploadDate",
-									"description": "Campo para ordenar (requerido): uploadDate, filename, documentType, status"
+									"value": "Created",
+									"description": "Campo para ordenar (opcional, default: Created): Created, uploadDate, filename, documentType, status"
 								},
 								{
 									"key": "sortDirection",
 									"value": "DESC",
-									"description": "Dirección de ordenamiento: ASC o DESC (default: ASC)"
+									"description": "Dirección de ordenamiento: ASC o DESC (default: DESC)"
 								},
 								{
 									"key": "filter",
@@ -339,7 +328,7 @@
 								}
 							]
 						},
-						"description": "Busca documentos con paginación y filtros genéricos avanzados. El parámetro sortBy es obligatorio."
+						"description": "Busca documentos con paginación y filtros genéricos avanzados. Los parámetros sortBy y sortDirection son opcionales (default: sortBy=Created, sortDirection=DESC)."
 					},
 					"response": []
 				},
@@ -355,7 +344,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/search?page=2&pageSize=10&sortBy=uploadDate&sortDirection=DESC",
+							"raw": "{{base_url}}/api/bhd/mgmt/1/documents/search?page=2&pageSize=10&sortBy=Created&sortDirection=DESC",
 							"host": [
 								"{{base_url}}"
 							],
@@ -378,7 +367,7 @@
 								},
 								{
 									"key": "sortBy",
-									"value": "uploadDate"
+									"value": "Created"
 								},
 								{
 									"key": "sortDirection",
@@ -425,7 +414,7 @@
 								},
 								{
 									"key": "sortBy",
-									"value": "uploadDate"
+									"value": "Created"
 								},
 								{
 									"key": "sortDirection",
