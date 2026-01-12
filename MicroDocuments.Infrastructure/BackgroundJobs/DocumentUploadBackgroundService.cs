@@ -87,8 +87,7 @@ public class DocumentUploadBackgroundService : BackgroundService
                 }
 
                 document.Status = DocumentStatus.FAILED;
-                document.Updated = DateTime.UtcNow;
-                await repository.SaveAsync(document, cancellationToken);
+                await repository.UpdateAsync(document, cancellationToken);
             }
         }
     }
@@ -113,9 +112,8 @@ public class DocumentUploadBackgroundService : BackgroundService
 
         document.Status = DocumentStatus.SENT;
         document.Url = url;
-        document.Updated = DateTime.UtcNow;
 
-        await repository.SaveAsync(document, cancellationToken);
+        await repository.UpdateAsync(document, cancellationToken);
         
         _logger.LogInformation(
             "DocumentUploadBackgroundService.ProcessDocumentAsync - Document status updated, DocumentId: {DocumentId}, UpdatedBy: {UpdatedBy}",

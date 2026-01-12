@@ -37,7 +37,7 @@ public class UploadDocumentUseCase
         try
         {
             await _fileStorage.SaveAsync(documentId, fileContent, cancellationToken);
-            document = await _repository.SaveAsync(document, cancellationToken);
+            document = await _repository.CreateAsync(document, cancellationToken);
 
             _logger.LogInformation(
                 "UploadDocumentUseCase.ExecuteAsync - Document uploaded, DocumentId: {DocumentId}, Filename: {Filename}, CreatedBy: {CreatedBy}",
@@ -87,7 +87,7 @@ public class UploadDocumentUseCase
         {
             // Save using streaming
             await _fileStorage.SaveFromStreamAsync(documentId, request.FileStream, cancellationToken);
-            document = await _repository.SaveAsync(document, cancellationToken);
+            document = await _repository.CreateAsync(document, cancellationToken);
 
             _logger.LogInformation(
                 "UploadDocumentUseCase.ExecuteStreamAsync - Document uploaded via stream, DocumentId: {DocumentId}, Filename: {Filename}, CreatedBy: {CreatedBy}",

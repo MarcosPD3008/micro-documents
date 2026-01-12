@@ -67,7 +67,7 @@ public class ApiKeysController : ControllerBase
                 Created = DateTime.UtcNow
             };
 
-            var saved = await _apiKeyRepository.SaveAsync(apiKey, cancellationToken);
+            var saved = await _apiKeyRepository.CreateAsync(apiKey, cancellationToken);
 
             // Update cache
             _cacheService.AddOrUpdate(saved);
@@ -184,7 +184,7 @@ public class ApiKeysController : ControllerBase
 
             apiKey.Deleted = DateTime.UtcNow;
             apiKey.IsActive = false;
-            await _apiKeyRepository.SaveAsync(apiKey, cancellationToken);
+            await _apiKeyRepository.UpdateAsync(apiKey, cancellationToken);
 
             // Remove from cache
             _cacheService.Remove(apiKey.KeyHash);

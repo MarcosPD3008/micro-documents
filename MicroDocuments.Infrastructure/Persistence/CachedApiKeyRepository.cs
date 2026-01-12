@@ -45,23 +45,24 @@ public class CachedApiKeyRepository : IApiKeyRepository
         return await _repository.GetAllActiveAsync(cancellationToken);
     }
 
-    public async Task<ApiKey> SaveAsync(ApiKey apiKey, CancellationToken cancellationToken = default)
+    public async Task<ApiKey> CreateAsync(ApiKey apiKey, CancellationToken cancellationToken = default)
     {
-        var wasNew = apiKey.Id == Guid.Empty;
-        var oldKeyHash = wasNew ? null : await GetOldKeyHashAsync(apiKey.Id, cancellationToken);
+        var saved = await _repository.CreateAsync(apiKey, cancellationToken);
+        _cacheService.AddOrUpdate(saved);
+        return saved;
+    }
 
-        // Save to database
-        var saved = await _repository.SaveAsync(apiKey, cancellationToken);
+    public async Task<ApiKey> UpdateAsync(ApiKey apiKey, CancellationToken cancellationToken = default)
+    {
+        var oldKeyHash = await GetOldKeyHashAsync(apiKey.Id, cancellationToken);
+        var saved = await _repository.UpdateAsync(apiKey, cancellationToken);
 
-        // Write-through: update cache
         if (oldKeyHash != null && oldKeyHash != saved.KeyHash)
         {
-            // Key hash changed, invalidate old entry
             _cacheService.InvalidateByKeyHash(oldKeyHash);
         }
 
         _cacheService.AddOrUpdate(saved);
-
         return saved;
     }
 
