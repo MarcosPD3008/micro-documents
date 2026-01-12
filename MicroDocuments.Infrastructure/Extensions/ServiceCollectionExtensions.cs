@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MicroDocuments.Domain.Ports;
 using MicroDocuments.Infrastructure.BackgroundJobs;
 using MicroDocuments.Infrastructure.Configuration;
@@ -21,10 +22,24 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlite(connectionString));
-
         services.AddHttpContextAccessor();
+        services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+        {
+            options.UseSqlite(connectionString);
+        }, ServiceLifetime.Scoped);
+        
+        var descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(AppDbContext));
+        if (descriptor != null)
+        {
+            services.Remove(descriptor);
+        }
+        services.AddScoped<AppDbContext>(sp =>
+        {
+            var options = sp.GetRequiredService<DbContextOptions<AppDbContext>>();
+            var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+            var apiKeySettings = sp.GetService<IOptions<ApiKeySettings>>()?.Value;
+            return new AppDbContext(options, httpContextAccessor, apiKeySettings);
+        });
 
         services.Configure<DocumentPublisherSettings>(
             configuration.GetSection(DocumentPublisherSettings.SectionName));
@@ -158,7 +173,7 @@ public static class ServiceCollectionExtensions
             Created = DateTime.UtcNow
         };
 
-        await baseRepository.SaveAsync(apiKey);
+        await baseRepository.CreateAsync(apiKey);
         logger.LogInformation("SeedMasterApiKeyAsync - Master API key created successfully");
     }
 
