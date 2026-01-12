@@ -76,7 +76,7 @@ public class ApiKeyAuthenticationMiddleware
                 using var scope = _serviceProvider.CreateScope();
                 var repo = scope.ServiceProvider.GetRequiredService<IApiKeyRepository>();
                 cachedApiKey.LastUsedAt = DateTime.UtcNow;
-                await repo.SaveAsync(cachedApiKey);
+                await repo.UpdateAsync(cachedApiKey);
             }
             catch (Exception ex)
             {
