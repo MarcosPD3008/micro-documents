@@ -1,7 +1,9 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MicroDocuments.Api.Controllers;
 using MicroDocuments.Api.DTOs;
 using MicroDocuments.Application.DTOs;
@@ -9,6 +11,7 @@ using MicroDocuments.Application.Pagination;
 using MicroDocuments.Application.UseCases;
 using MicroDocuments.Domain.Enums;
 using MicroDocuments.Domain.Ports;
+using MicroDocuments.Infrastructure.Configuration;
 using MicroDocuments.Tests.TestHelpers;
 using Moq;
 using System.Text;
@@ -22,6 +25,8 @@ public class DocumentsControllerTests
     private readonly Mock<SearchDocumentsUseCase> _searchUseCaseMock;
     private readonly Mock<SearchDocumentsPagedUseCase> _searchPagedUseCaseMock;
     private readonly Mock<ILogger<DocumentsController>> _loggerMock;
+    private readonly Mock<IOptions<FileUploadSettings>> _fileUploadSettingsMock;
+    private readonly Mock<IWebHostEnvironment> _environmentMock;
     private readonly DocumentsController _controller;
 
     public DocumentsControllerTests()
@@ -37,11 +42,23 @@ public class DocumentsControllerTests
             Mock.Of<IDocumentRepository>(),
             Mock.Of<ILogger<SearchDocumentsPagedUseCase>>());
         _loggerMock = new Mock<ILogger<DocumentsController>>();
+        
+        // Setup FileUploadSettings mock
+        var fileUploadSettings = new FileUploadSettings { MaxFileSizeMB = 100 };
+        _fileUploadSettingsMock = new Mock<IOptions<FileUploadSettings>>();
+        _fileUploadSettingsMock.Setup(x => x.Value).Returns(fileUploadSettings);
+        
+        // Setup IWebHostEnvironment mock (default to Development for tests)
+        _environmentMock = new Mock<IWebHostEnvironment>();
+        _environmentMock.Setup(x => x.EnvironmentName).Returns("Development");
+        
         _controller = new DocumentsController(
             _uploadUseCaseMock.Object,
             _searchUseCaseMock.Object,
             _searchPagedUseCaseMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object,
+            _fileUploadSettingsMock.Object,
+            _environmentMock.Object);
     }
 
     [Fact]

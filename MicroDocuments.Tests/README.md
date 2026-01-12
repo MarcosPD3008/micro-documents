@@ -479,3 +479,4 @@ dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
 Esto generará un archivo de cobertura que puede ser visualizado con herramientas como ReportGenerator.
 
+
