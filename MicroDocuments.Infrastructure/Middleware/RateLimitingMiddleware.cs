@@ -11,6 +11,7 @@ public class RateLimitingMiddleware
     private readonly RequestDelegate _next;
     private readonly RateLimiterSettings _settings;
     private readonly ConcurrentDictionary<string, RateLimitInfo> _rateLimitStore;
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphores;
 
     public RateLimitingMiddleware(
         RequestDelegate next,
@@ -19,6 +20,7 @@ public class RateLimitingMiddleware
         _next = next;
         _settings = resilienceSettings.Value.RateLimiter;
         _rateLimitStore = new ConcurrentDictionary<string, RateLimitInfo>();
+        _semaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -40,33 +42,42 @@ public class RateLimitingMiddleware
         var apiKeyId = apiKey.Id.ToString();
         var now = DateTime.UtcNow;
 
-        var rateLimitInfo = _rateLimitStore.AddOrUpdate(
-            apiKeyId,
-            new RateLimitInfo { WindowStart = now, RequestCount = 1 },
-            (key, existing) =>
-            {
-                var elapsed = now - existing.WindowStart;
+        var semaphore = _semaphores.GetOrAdd(apiKeyId, _ => new SemaphoreSlim(1, 1));
 
-                // Reset window if a minute has passed
-                if (elapsed >= TimeSpan.FromMinutes(1))
-                {
-                    return new RateLimitInfo { WindowStart = now, RequestCount = 1 };
-                }
-
-                // Increment count
-                return new RateLimitInfo
-                {
-                    WindowStart = existing.WindowStart,
-                    RequestCount = existing.RequestCount + 1
-                };
-            });
-
-        // Check if limit exceeded
-        if (rateLimitInfo.RequestCount > apiKey.RateLimitPerMinute)
+        await semaphore.WaitAsync();
+        try
         {
-            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-            await context.Response.WriteAsync("Rate limit exceeded. Please try again later.");
-            return;
+            var rateLimitInfo = _rateLimitStore.AddOrUpdate(
+                apiKeyId,
+                new RateLimitInfo { WindowStart = now, RequestCount = 1 },
+                (key, existing) =>
+                {
+                    var elapsed = now - existing.WindowStart;
+
+                    // Reset window if a minute has passed
+                    if (elapsed >= TimeSpan.FromMinutes(1))
+                    {
+                        return new RateLimitInfo { WindowStart = now, RequestCount = 1 };
+                    }
+
+                    // Increment count
+                    return new RateLimitInfo
+                    {
+                        WindowStart = existing.WindowStart,
+                        RequestCount = existing.RequestCount + 1
+                    };
+                });
+
+            if (rateLimitInfo.RequestCount > apiKey.RateLimitPerMinute)
+            {
+                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                await context.Response.WriteAsync("Rate limit exceeded. Please try again later.");
+                return;
+            }
+        }
+        finally
+        {
+            semaphore.Release();
         }
 
         await _next(context);
