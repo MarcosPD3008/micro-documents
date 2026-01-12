@@ -27,7 +27,7 @@ public class DocumentUploadBackgroundServiceTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var document = context.Documents.First();
 
         var publisherMock = new Mock<IDocumentPublisher>();
@@ -63,7 +63,7 @@ public class DocumentUploadBackgroundServiceTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var document = context.Documents.First();
 
         var publisherMock = new Mock<IDocumentPublisher>();
@@ -133,7 +133,7 @@ public class DocumentUploadBackgroundServiceTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var fileStorageMock = new Mock<IFileStorage>();
         var validIds = new[] { context.Documents.First().Id };
 

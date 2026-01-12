@@ -43,7 +43,7 @@ public class UploadDocumentUseCaseTests
             .Returns(Task.CompletedTask);
 
         _repositoryMock
-            .Setup(x => x.SaveAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.CreateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(savedDocument);
 
         // Act
@@ -53,7 +53,7 @@ public class UploadDocumentUseCaseTests
         result.Should().NotBeNull();
         result.Id.Should().Be(savedDocument.Id.ToString());
         _fileStorageMock.Verify(x => x.SaveAsync(It.IsAny<Guid>(), It.IsAny<byte[]>(), It.IsAny<CancellationToken>()), Times.Once);
-        _repositoryMock.Verify(x => x.SaveAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Once);
+        _repositoryMock.Verify(x => x.CreateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class UploadDocumentUseCaseTests
             .Returns(Task.CompletedTask);
 
         _repositoryMock
-            .Setup(x => x.SaveAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.CreateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Database error"));
 
         _fileStorageMock
@@ -107,7 +107,7 @@ public class UploadDocumentUseCaseTests
             .Returns(Task.CompletedTask);
 
         _repositoryMock
-            .Setup(x => x.SaveAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.CreateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(savedDocument);
 
         // Act
@@ -117,7 +117,7 @@ public class UploadDocumentUseCaseTests
         result.Should().NotBeNull();
         result.Id.Should().Be(savedDocument.Id.ToString());
         _fileStorageMock.Verify(x => x.SaveFromStreamAsync(It.IsAny<Guid>(), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once);
-        _repositoryMock.Verify(x => x.SaveAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Once);
+        _repositoryMock.Verify(x => x.CreateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -151,6 +151,7 @@ public class UploadDocumentUseCaseTests
         _fileStorageMock.Verify(x => x.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }
+
 
 
 

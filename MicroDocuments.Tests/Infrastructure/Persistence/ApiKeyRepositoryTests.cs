@@ -14,7 +14,7 @@ public class ApiKeyRepositoryTests
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
         
         var apiKey = new ApiKey
         {
@@ -44,7 +44,7 @@ public class ApiKeyRepositoryTests
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
 
         // Act
         var result = await repository.GetByKeyHashAsync("non-existent-hash");
@@ -59,7 +59,7 @@ public class ApiKeyRepositoryTests
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
         
         var apiKey = new ApiKey
         {
@@ -87,7 +87,7 @@ public class ApiKeyRepositoryTests
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
         
         var apiKey = new ApiKey
         {
@@ -111,12 +111,11 @@ public class ApiKeyRepositoryTests
     }
 
     [Fact]
-    public async Task SaveAsync_Should_CreateNewApiKey_When_IdIsEmpty()
+    public async Task CreateAsync_Should_CreateNewApiKey_When_IdIsEmpty()
     {
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
         
         var apiKey = new ApiKey
         {
@@ -128,7 +127,7 @@ public class ApiKeyRepositoryTests
         };
 
         // Act
-        var result = await repository.SaveAsync(apiKey);
+        var result = await repository.CreateAsync(apiKey);
 
         // Assert
         result.Should().NotBeNull();
@@ -138,13 +137,12 @@ public class ApiKeyRepositoryTests
     }
 
     [Fact]
-    public async Task SaveAsync_Should_UpdateExistingApiKey_When_IdExists()
+    public async Task UpdateAsync_Should_UpdateExistingApiKey_When_IdExists()
     {
         // Arrange
         var apiKeyId = Guid.NewGuid();
         using var context = InMemoryDbContextFactory.Create();
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
         
         var existingApiKey = new ApiKey
         {
@@ -170,7 +168,7 @@ public class ApiKeyRepositoryTests
         };
 
         // Act
-        var result = await repository.SaveAsync(updatedApiKey);
+        var result = await repository.UpdateAsync(updatedApiKey);
 
         // Assert
         result.Should().NotBeNull();
@@ -186,7 +184,7 @@ public class ApiKeyRepositoryTests
         var apiKeyId = Guid.NewGuid();
         using var context = InMemoryDbContextFactory.Create();
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
         
         var apiKey = new ApiKey
         {
@@ -216,7 +214,7 @@ public class ApiKeyRepositoryTests
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var repository = new ApiKeyRepository(context, httpContextAccessor.Object);
+        var repository = new ApiKeyRepository(context);
         var nonExistentId = Guid.NewGuid();
 
         // Act

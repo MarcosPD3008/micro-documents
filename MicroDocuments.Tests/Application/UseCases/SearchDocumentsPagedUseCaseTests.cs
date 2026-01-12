@@ -29,7 +29,7 @@ public class SearchDocumentsPagedUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsPagedUseCase(repository, _loggerMock.Object);
         var paginationRequest = MockDataFactory.CreatePaginationRequest(page: 1, pageSize: 10);
 
@@ -55,7 +55,7 @@ public class SearchDocumentsPagedUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsPagedUseCase(repository, _loggerMock.Object);
         var paginationRequest = MockDataFactory.CreatePaginationRequest(
             page: 1,
@@ -81,7 +81,7 @@ public class SearchDocumentsPagedUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsPagedUseCase(repository, _loggerMock.Object);
         var paginationRequest = MockDataFactory.CreatePaginationRequest(
             page: 1,
@@ -108,7 +108,7 @@ public class SearchDocumentsPagedUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsPagedUseCase(repository, _loggerMock.Object);
         var paginationRequest = MockDataFactory.CreatePaginationRequest(page: 1, pageSize: 10);
 
@@ -132,7 +132,7 @@ public class SearchDocumentsPagedUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsPagedUseCase(repository, _loggerMock.Object);
         var paginationRequest = MockDataFactory.CreatePaginationRequest(page: 1, pageSize: 10);
 

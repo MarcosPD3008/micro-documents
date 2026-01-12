@@ -32,7 +32,7 @@ public class SearchDocumentsUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsUseCase(repository, _loggerMock.Object);
         var searchDto = MockDataFactory.CreateSearchDocumentsDto();
 
@@ -57,7 +57,7 @@ public class SearchDocumentsUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsUseCase(repository, _loggerMock.Object);
         var searchDto = MockDataFactory.CreateSearchDocumentsDto();
         searchDto.Filename = "test";
@@ -84,7 +84,7 @@ public class SearchDocumentsUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsUseCase(repository, _loggerMock.Object);
         var searchDto = MockDataFactory.CreateSearchDocumentsDto(sortBy: "Filename", sortDirection: "ASC");
 
@@ -103,7 +103,7 @@ public class SearchDocumentsUseCaseTests
         using var context = InMemoryDbContextFactory.Create();
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsUseCase(repository, _loggerMock.Object);
         var searchDto = MockDataFactory.CreateSearchDocumentsDto();
         searchDto.Filename = "nonexistent";
@@ -131,7 +131,7 @@ public class SearchDocumentsUseCaseTests
 
         var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
         var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var useCase = new SearchDocumentsUseCase(repository, _loggerMock.Object);
         var searchDto = MockDataFactory.CreateSearchDocumentsDto(
             uploadDateStart: startDate,

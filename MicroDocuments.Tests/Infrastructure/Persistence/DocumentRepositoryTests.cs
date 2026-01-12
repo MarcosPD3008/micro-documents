@@ -10,19 +10,17 @@ namespace MicroDocuments.Tests.Infrastructure.Persistence;
 public class DocumentRepositoryTests
 {
     [Fact]
-    public async Task SaveAsync_Should_AddNewDocument_When_IdIsEmpty()
+    public async Task CreateAsync_Should_AddNewDocument_When_IdIsEmpty()
     {
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var document = new DocumentBuilder()
             .WithId(Guid.Empty)
             .Build();
 
         // Act
-        var result = await repository.SaveAsync(document);
+        var result = await repository.CreateAsync(document);
 
         // Assert
         result.Should().NotBeNull();
@@ -32,7 +30,7 @@ public class DocumentRepositoryTests
     }
 
     [Fact]
-    public async Task SaveAsync_Should_UpdateExistingDocument_When_IdExists()
+    public async Task UpdateAsync_Should_UpdateExistingDocument_When_IdExists()
     {
         // Arrange
         var documentId = Guid.NewGuid();
@@ -44,16 +42,14 @@ public class DocumentRepositoryTests
                 .Build());
         });
 
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var updatedDocument = new DocumentBuilder()
             .WithId(documentId)
             .WithFilename("new.pdf")
             .Build();
 
         // Act
-        var result = await repository.SaveAsync(updatedDocument);
+        var result = await repository.UpdateAsync(updatedDocument);
 
         // Assert
         result.Should().NotBeNull();
@@ -62,20 +58,18 @@ public class DocumentRepositoryTests
     }
 
     [Fact]
-    public async Task SaveAsync_Should_SetCreated_When_NewDocument()
+    public async Task CreateAsync_Should_SetCreated_When_NewDocument()
     {
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var document = new DocumentBuilder()
             .WithId(Guid.Empty)
             .Build();
         document.Created = default;
 
         // Act
-        var result = await repository.SaveAsync(document);
+        var result = await repository.CreateAsync(document);
 
         // Assert
         result.Created.Should().NotBe(default);
@@ -83,7 +77,7 @@ public class DocumentRepositoryTests
     }
 
     [Fact]
-    public async Task SaveAsync_Should_SetUpdated_When_ExistingDocument()
+    public async Task UpdateAsync_Should_SetUpdated_When_ExistingDocument()
     {
         // Arrange
         var documentId = Guid.NewGuid();
@@ -94,16 +88,14 @@ public class DocumentRepositoryTests
                 .Build());
         });
 
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var updatedDocument = new DocumentBuilder()
             .WithId(documentId)
             .Build();
         updatedDocument.Updated = null;
 
         // Act
-        var result = await repository.SaveAsync(updatedDocument);
+        var result = await repository.UpdateAsync(updatedDocument);
 
         // Assert
         result.Updated.Should().NotBeNull();
@@ -123,9 +115,7 @@ public class DocumentRepositoryTests
                 .Build());
         });
 
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
 
         // Act
         var result = await repository.GetByIdAsync(documentId);
@@ -141,9 +131,7 @@ public class DocumentRepositoryTests
     {
         // Arrange
         using var context = InMemoryDbContextFactory.Create();
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
         var nonExistentId = Guid.NewGuid();
 
         // Act
@@ -162,9 +150,7 @@ public class DocumentRepositoryTests
             db.Documents.AddRange(MockDataFactory.CreateDocuments(5));
         });
 
-        var httpContextAccessor = InMemoryDbContextFactory.CreateHttpContextAccessor();
-        var apiKeySettings = InMemoryDbContextFactory.CreateApiKeySettings();
-        var repository = new DocumentRepository(context, httpContextAccessor.Object, apiKeySettings.Object);
+        var repository = new DocumentRepository(context);
 
         // Act
         var result = repository.GetAll();
