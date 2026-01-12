@@ -45,15 +45,42 @@ public class LocalFileStorage : IFileStorage
     {
         var filePath = GetFilePath(documentId);
 
-        if (File.Exists(filePath))
+        if (!File.Exists(filePath))
         {
-            File.Delete(filePath);
-            _logger.LogInformation(
-                "LocalFileStorage.DeleteAsync - File deleted, DocumentId: {DocumentId}",
-                documentId);
+            return;
         }
 
-        await Task.CompletedTask;
+        const int maxRetries = 5;
+        const int delayMs = 200;
+        
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                File.Delete(filePath);
+                _logger.LogInformation(
+                    "LocalFileStorage.DeleteAsync - File deleted, DocumentId: {DocumentId}, Attempt: {Attempt}",
+                    documentId, attempt);
+                return;
+            }
+            catch (IOException ex) when (ex.Message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase))
+            {
+                if (attempt < maxRetries)
+                {
+                    _logger.LogWarning(
+                        "LocalFileStorage.DeleteAsync - File is in use, retrying in {Delay}ms, DocumentId: {DocumentId}, Attempt: {Attempt}/{MaxRetries}",
+                        delayMs, documentId, attempt, maxRetries);
+                    await Task.Delay(delayMs, cancellationToken);
+                }
+                else
+                {
+                    _logger.LogError(ex,
+                        "LocalFileStorage.DeleteAsync - Failed to delete file after {MaxRetries} attempts, DocumentId: {DocumentId}",
+                        maxRetries, documentId);
+                    throw;
+                }
+            }
+        }
     }
 
     public async Task SaveFromStreamAsync(Guid documentId, Stream sourceStream, CancellationToken cancellationToken = default)
