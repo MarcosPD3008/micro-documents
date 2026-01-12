@@ -37,8 +37,8 @@ public class SearchDocumentsUseCase
 
         var sortRequest = new SortRequest
         {
-            SortBy = searchDto.SortBy,
-            SortDirection = searchDto.SortDirection
+            SortBy = string.IsNullOrWhiteSpace(searchDto.SortBy) ? "Created" : searchDto.SortBy,
+            SortDirection = string.IsNullOrWhiteSpace(searchDto.SortDirection) ? "DESC" : searchDto.SortDirection
         };
         query = query.ApplySorting(sortRequest);
 

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using MicroDocuments.Domain.Enums;
 
@@ -14,9 +15,10 @@ public string? ContentType { get; set; }
     public string? CustomerId { get; set; }
     public Channel? Channel { get; set; }
 
-    [Required]
-    public string SortBy { get; set; } = string.Empty;
+    [DefaultValue("Created")]
+    public string SortBy { get; set; } = "Created";
 
-    public string SortDirection { get; set; } = "ASC";
+    [DefaultValue("DESC")]
+    public string SortDirection { get; set; } = "DESC";
 }
 

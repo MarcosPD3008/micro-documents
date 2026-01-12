@@ -75,6 +75,10 @@ builder.Services.AddSwaggerGen(c =>
     c.EnableAnnotations();
     
     c.UseInlineDefinitionsForEnums();
+    
+    c.SchemaFilter<MicroDocuments.Api.Swagger.DefaultValueSchemaFilter>();
+    
+    c.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
 });
 
 builder.Services.AddHealthChecks();

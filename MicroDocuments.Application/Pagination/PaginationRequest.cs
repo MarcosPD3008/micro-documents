@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace MicroDocuments.Application.Pagination;
@@ -8,9 +9,10 @@ public class PaginationRequest
     public int PageSize { get; set; } = 10;
     public string? Filter { get; set; }
 
-    [Required]
-    public string SortBy { get; set; } = string.Empty;
+    [DefaultValue("Created")]
+    public string SortBy { get; set; } = "Created";
 
-    public string SortDirection { get; set; } = "ASC";
+    [DefaultValue("DESC")]
+    public string SortDirection { get; set; } = "DESC";
 }
 

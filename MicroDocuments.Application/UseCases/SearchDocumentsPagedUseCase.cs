@@ -34,8 +34,8 @@ public class SearchDocumentsPagedUseCase
 
         var sortRequest = new SortRequest
         {
-            SortBy = paginationRequest.SortBy,
-            SortDirection = paginationRequest.SortDirection
+            SortBy = string.IsNullOrWhiteSpace(paginationRequest.SortBy) ? "Created" : paginationRequest.SortBy,
+            SortDirection = string.IsNullOrWhiteSpace(paginationRequest.SortDirection) ? "DESC" : paginationRequest.SortDirection
         };
         query = query.ApplySorting(sortRequest);
 

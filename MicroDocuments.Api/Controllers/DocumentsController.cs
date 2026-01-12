@@ -56,7 +56,6 @@ public class DocumentsController : ControllerBase
             return BadRequest("File is required");
         }
 
-        // Validate file size
         if (formDto.File.Length > _fileUploadSettings.MaxFileSizeBytes)
         {
             return BadRequest($"File size exceeds maximum allowed size of {_fileUploadSettings.MaxFileSizeMB} MB");
@@ -72,7 +71,6 @@ public class DocumentsController : ControllerBase
 
         try
         {
-            // Use streaming directly from IFormFile
             await using var fileStream = formDto.File.OpenReadStream();
             var fileSize = formDto.File.Length;
 
@@ -139,7 +137,12 @@ public class DocumentsController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(paginationRequest.SortBy))
         {
-            return BadRequest("SortBy is required");
+            paginationRequest.SortBy = "Created";
+        }
+        
+        if (string.IsNullOrWhiteSpace(paginationRequest.SortDirection))
+        {
+            paginationRequest.SortDirection = "DESC";
         }
 
         try
