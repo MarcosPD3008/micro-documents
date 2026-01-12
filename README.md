@@ -210,6 +210,9 @@ La configuración principal se encuentra en `MicroDocuments.Api/appsettings.json
   "ConnectionStrings": {
     "DefaultConnection": "Data Source=db/documents.db"
   },
+  "FileUpload": {
+    "MaxFileSizeMB": 100
+  },
   "DocumentPublisher": {
     "Url": "https://internal-document-storage.bhd.com.do/api/documents",
     "UseMock": true
@@ -239,6 +242,15 @@ La configuración principal se encuentra en `MicroDocuments.Api/appsettings.json
 - **DefaultConnection**: Cadena de conexión a la base de datos SQLite
   - Formato: `Data Source=<ruta>/documents.db`
   - En Docker: `Data Source=/app/db/documents.db`
+
+---
+
+#### FileUpload
+
+- **MaxFileSizeMB**: Tamaño máximo permitido para archivos en megabytes (por defecto: 100 MB)
+  - La validación se realiza en el controlador antes de procesar el archivo
+  - Si el archivo excede el límite, se retorna `400 Bad Request` con un mensaje descriptivo
+  - Este valor también se usa para configurar los límites de `FormOptions` y `Kestrel` para permitir archivos grandes
 
 ---
 
@@ -556,15 +568,22 @@ Servicio en segundo plano (`BackgroundService`) que procesa documentos pendiente
 - **Procesamiento en lotes**: Procesa hasta 10 documentos por ciclo
 - **Intervalo configurable**: Ejecuta cada 5 segundos
 - **Limpieza automática**: Limpia archivos huérfanos periódicamente (cada 5 minutos)
-- **Manejo de errores**: Marca documentos como `FAILED` y limpia archivos temporales en caso de error
+- **Manejo de errores robusto**: Marca documentos como `FAILED` solo si falla la publicación, no si falla la limpieza posterior
 - **Scope management**: Utiliza `IServiceScope` para acceso a servicios con scoped lifetime
+- **Gestión de streams**: Asegura que los streams se cierren correctamente antes de intentar eliminar archivos
 
 **Flujo de procesamiento:**
 1. Busca documentos con estado `RECEIVED`
 2. Lee el archivo desde almacenamiento temporal mediante stream
 3. Publica el documento al servicio externo mediante stream
-4. Actualiza el estado a `SENT` y guarda la URL
-5. Elimina el archivo temporal
+4. Cierra el stream correctamente antes de continuar
+5. Actualiza el estado a `SENT` y guarda la URL
+6. Intenta eliminar el archivo temporal (con reintentos automáticos si está bloqueado)
+7. Si la eliminación falla, solo se registra un warning; el documento ya está marcado como `SENT`
+
+**Manejo de errores:**
+- Si la publicación falla: El documento se marca como `FAILED` y se intenta limpiar el archivo temporal
+- Si la eliminación falla después de publicación exitosa: Solo se registra un warning; el documento permanece como `SENT` (el archivo se limpiará en el siguiente ciclo de limpieza)
 
 **Implementación:**
 ```csharp
@@ -593,6 +612,8 @@ Procesamiento eficiente de archivos mediante streams para evitar cargar archivos
 - **Streaming de almacenamiento**: `SaveFromStreamAsync()` para guardar sin cargar en memoria
 - **Streaming de publicación**: `PublishStreamAsync()` para enviar al servicio externo
 - **Eficiencia de memoria**: Procesa archivos grandes sin consumir memoria excesiva
+- **Gestión de streams**: Los streams se cierran correctamente usando `await using` para evitar bloqueos de archivos
+- **Retry logic en eliminación**: `DeleteAsync()` implementa reintentos automáticos (hasta 5 intentos) si el archivo está bloqueado por otro proceso
 
 **Interfaces:**
 ```csharp
@@ -606,10 +627,17 @@ public interface IFileStorage
 
 **Flujo:**
 1. Cliente envía archivo → `IFormFile` stream
-2. Guardado temporal → `SaveFromStreamAsync()` (stream directo)
-3. Background service lee → `GetStreamAsync()` (stream directo)
-4. Publicación → `PublishStreamAsync()` (stream directo)
-5. Limpieza → `DeleteAsync()`
+2. Validación de tamaño en el controlador (antes de procesar)
+3. Guardado temporal → `SaveFromStreamAsync()` (stream directo)
+4. Background service lee → `GetStreamAsync()` (stream directo)
+5. Publicación → `PublishStreamAsync()` (stream directo)
+6. Cierre de stream → El stream se cierra automáticamente con `await using`
+7. Limpieza → `DeleteAsync()` con reintentos si es necesario
+
+**Validación de tamaño de archivo:**
+- La validación se realiza en el controlador antes de procesar el archivo
+- El tamaño máximo se configura mediante `FileUploadSettings.MaxFileSizeMB`
+- Si el archivo excede el límite, se retorna `400 Bad Request` inmediatamente
 
 ---
 
