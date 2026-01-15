@@ -18,7 +18,7 @@ public string? ContentType { get; set; }
     [DefaultValue("Created")]
     public string SortBy { get; set; } = "Created";
 
-    [DefaultValue("DESC")]
-    public string SortDirection { get; set; } = "DESC";
+    [DefaultValue("ASC")]
+    public string SortDirection { get; set; } = "ASC";
 }
 
